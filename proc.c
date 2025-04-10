@@ -566,3 +566,9 @@ fillpstat(pstatTable * pstat) {
   }
   release(&ptable.lock);
 }
+
+// Sets the tickets of the calling process to the number passed in
+void
+settickets(int number) {
+  
+}

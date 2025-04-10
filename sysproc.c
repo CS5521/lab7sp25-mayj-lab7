@@ -101,3 +101,15 @@ sys_getpinfo(void) {
   fillpstat(pstat);
   return 0;
 }
+
+int
+sys_settickets(void) {
+  int n;
+  if (argint(0, &n) < 0)
+    return -1;
+  if (n < 10) 
+    return -1;
+  settickets(n);
+  
+  return 0;
+} 
