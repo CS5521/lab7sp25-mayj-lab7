@@ -109,7 +109,6 @@ sys_settickets(void) {
     return -1;
   if (n < 10) 
     return -1;
-  settickets(n);
-  
-  return 0;
+  int result = settickets(n);
+  return result;
 } 

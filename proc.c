@@ -568,7 +568,10 @@ fillpstat(pstatTable * pstat) {
 }
 
 // Sets the tickets of the calling process to the number passed in
-void
+int
 settickets(int number) {
-  
+  struct proc *p = myproc();
+  if (!p) return -1;
+  p->tickets = number;
+  return 0;
 }
