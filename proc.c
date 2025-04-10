@@ -541,3 +541,27 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+// Accepts a pointer to a struct pstatTable object
+// Returns -1 if fails, return 0 if successful
+int
+getpinfo(pstatTable * pstat) {
+  struct proc *p;
+}
+
+// Fill the pstatTable
+void
+fillpstat(pstatTable * pstat) {
+  struct proc *p; //the proc array 
+  
+  //Traverse the proc array to grab the needed fields out of each proc struct 
+  //and copy them into the pstatTable object
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    (*pstat)[i].inuse = p->inuse;     // whether this slot of the process table is in use (1 or 0)
+    (*pstat)[i].tickets = p->tickets; // the number of tickets this process has
+    (*pstat)[i].pid = p->pid;         // the PID of each process
+    (*pstat)[i].ticks = p->ticks;     // the number of ticks each process has accumulated
+    (*pstat)[i].name = p->name;       // process name
+    (*pstat)[i].state = p->state;     // 'E', 'R', 'A', 'S', 'Z' (embryo, running, runnable, sleeping, zombie)
+  }
+}
