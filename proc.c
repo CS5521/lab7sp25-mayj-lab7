@@ -204,7 +204,7 @@ fork(void)
     return -1;
   }
   np->ticks = 0; //Set the ticks of new process to 0
-  np->tickets = (11 + curproc->tickets);
+  np->tickets = (10 >= curproc->tickets) ? 10 : curproc->tickets; //Set the tickets to the greater of 10 or parent tickets
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
@@ -556,7 +556,11 @@ fillpstat(pstatTable * pstat) {
     (*pstat)[i].pid = p->pid;         // the PID of each process
     (*pstat)[i].ticks = p->ticks;     // the number of ticks each process has accumulated
     safestrcpy((*pstat)[i].name, p->name, sizeof(p->name));       // copy process name
-    (*pstat)[i].state = p->state;     // 'E', 'R', 'A', 'S', 'Z' (embryo, running, runnable, sleeping, zombie)
+    if (p->state == EMBRYO) (*pstat)[i].state = 'E';
+    if (p->state == RUNNING) (*pstat)[i].state = 'R';
+    if (p->state == RUNNABLE) (*pstat)[i].state = 'A';
+    if (p->state == SLEEPING) (*pstat)[i].state = 'S';
+    if (p->state == ZOMBIE) (*pstat)[i].state = 'Z';
     i++;
   }
   release(&ptable.lock);

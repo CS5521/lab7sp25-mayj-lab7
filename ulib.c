@@ -3,6 +3,7 @@
 #include "fcntl.h"
 #include "user.h"
 #include "x86.h"
+#include "pstat.h"
 
 char*
 strcpy(char *s, const char *t)
@@ -103,4 +104,17 @@ memmove(void *vdst, const void *vsrc, int n)
   while(n-- > 0)
     *dst++ = *src++;
   return vdst;
+}
+
+void
+ps() {
+  pstatTable pstat;
+  int i = 0;
+  printf(1, "PID	TKTS	TCKS	STAT	NAME\n");
+  getpinfo(&pstat);
+  while (pstat[i].pid != 0) {
+      printf(1, "%d	%d	%d	%c	%s\n", pstat[i].pid, 
+	pstat[i].tickets, pstat[i].ticks, pstat[i].state, pstat[i].name);
+      i++;
+  }
 }
