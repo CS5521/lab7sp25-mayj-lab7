@@ -572,6 +572,8 @@ int
 settickets(int number) {
   struct proc *p = myproc();
   if (!p) return -1;
+  acquire(&ptable.lock);
   p->tickets = number;
+  release(&ptable.lock);
   return 0;
 }
