@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "pstat.h"
 
 struct {
   struct spinlock lock;
@@ -126,6 +127,7 @@ userinit(void)
   p = allocproc();
   
   initproc = p;
+
   if((p->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
   inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
@@ -138,6 +140,11 @@ userinit(void)
   p->tf->eflags = FL_IF;
   p->tf->esp = PGSIZE;
   p->tf->eip = 0;  // beginning of initcode.S
+  
+  initproc->ticks = 0; //Set the ticks for init process to 0
+  initproc->tickets = 10; //Set the tickets for init process to 10
+  p->ticks = 0;
+  p->tickets = 10;
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
@@ -196,6 +203,8 @@ fork(void)
     np->state = UNUSED;
     return -1;
   }
+  np->ticks = 0; //Set the ticks of new process to 0
+  np->tickets = (11 + curproc->tickets);
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
