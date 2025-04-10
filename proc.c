@@ -551,11 +551,12 @@ fillpstat(pstatTable * pstat) {
   //Traverse the proc array to grab the needed fields out of each proc struct 
   //and copy them into the pstatTable object
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    (*pstat)[i].inuse = 1;     // whether this slot of the process table is in use (1 or 0)
-    (*pstat)[i].tickets = p->tickets; // the number of tickets this process has
-    (*pstat)[i].pid = p->pid;         // the PID of each process
-    (*pstat)[i].ticks = p->ticks;     // the number of ticks each process has accumulated
-    safestrcpy((*pstat)[i].name, p->name, sizeof(p->name));       // copy process name
+    (*pstat)[i].inuse = 1;     					// whether this slot of the process table is in use (1 or 0)
+    (*pstat)[i].tickets = p->tickets; 				// the number of tickets this process has
+    (*pstat)[i].pid = p->pid;         				// the PID of each process
+    (*pstat)[i].ticks = p->ticks;     				// the number of ticks each process has accumulated
+    safestrcpy((*pstat)[i].name, p->name, sizeof(p->name));	// copy process name
+    // 'E', 'R', 'A', 'S', 'Z' (embryo, running, runnable, sleeping, zombie)
     if (p->state == EMBRYO) (*pstat)[i].state = 'E';
     if (p->state == RUNNING) (*pstat)[i].state = 'R';
     if (p->state == RUNNABLE) (*pstat)[i].state = 'A';
