@@ -7,6 +7,7 @@
 #include "proc.h"
 #include "spinlock.h"
 #include "pstat.h"
+#define RAND_MAX ((1U << 31) - 1)
 
 struct {
   struct spinlock lock;
@@ -20,6 +21,14 @@ extern void forkret(void);
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+
+static int rseed = 1898888478;
+
+int 
+random() {
+  return rseed = (rseed * 1103515245 + 12345) & RAND_MAX;
+}
+
 
 void
 pinit(void)
@@ -334,31 +343,58 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
   for(;;){
     // Enable interrupts on this processor.
     sti();
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
-
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
-
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
+    int total_tickets = 0;
+    // Go through the process table to calculate 
+    // the total number of tickets for RUNNABLE processes
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    	if (p->state != RUNNABLE) continue;
+	total_tickets += p->tickets;
     }
+    
+    // There isn't a process ready to run,
+    // executed the loop again
+    if (total_tickets > 0) {
+      
+      // Use the random number generator to choose a winner
+      int winner_ticket = random() % total_tickets;
+
+      int new_total = 0; // Set the ticket total for second loop
+ 
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if(p->state != RUNNABLE)
+          continue;
+        
+        new_total += p->tickets; // Add the total again
+        
+        // Find the winner ticket
+        if (new_total > winner_ticket) {
+      
+          // Switch to chosen process.  It is the process's job
+          // to release ptable.lock and then reacquire it
+          // before jumping back to us.
+          c->proc = p;
+          switchuvm(p);
+          p->state = RUNNING;
+
+          swtch(&(c->scheduler), p->context);
+          switchkvm();
+
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+
+          p->ticks += 1; // Increment the ticks count for each process that runs
+          break;
+        }
+      }
+    }
+    
     release(&ptable.lock);
 
   }
